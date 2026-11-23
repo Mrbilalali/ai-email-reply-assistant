@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="data:," />
+    <title>AI Email Reply Assistant</title>
+    <meta property="og:title" content="AI Email Reply Assistant - Interactive Demo" />
+    <meta property="og:description" content="Interactive demo: a customer email arrives, the AI drafts the reply in seconds - and books the visit." />
+    <meta property="og:url" content="https://ai-email-reply-assistant-mr-bilal-alis-projects.vercel.app" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://ai-email-reply-assistant-mr-bilal-alis-projects.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="627" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AI Email Reply Assistant - Interactive Demo" />
+    <meta name="twitter:description" content="Interactive demo: a customer email arrives, the AI drafts the reply in seconds - and books the visit." />
+    <meta name="twitter:image" content="https://ai-email-reply-assistant-mr-bilal-alis-projects.vercel.app/og-image.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#fcfcff;
+        --surface:#ffffff;
+        --panel:#eef0fe;
+        --panel-soft:#f5f6fe;
+        --ink:#10101e;
+        --body:#4c4c60;
+        --muted:#74748c;
+        --line:#dddff2;
+        --blue:#2b2bd0;
+        --blue-dark:#2323b8;
+        --blue-hi:#3233ef;
+        --blue-tint:#e7e8fd;
+        --orange:#f76707;
+        --orange-dark:#d9480f;
+        --orange-tint:#fff1e8;
+        --radius:14px;
+        --shadow:0 1px 2px rgba(16,16,30,.05),0 10px 30px -12px rgba(43,43,208,.14);
+      }
+      *{box-sizing:border-box;}
+      html{scroll-behavior:smooth;}
+      body{
+        margin:0;
+        background:var(--bg);
+        color:var(--body);
+        font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+        font-size:16px;
+        line-height:1.55;
+        -webkit-font-smoothing:antialiased;
+      }
+      h1,h2,h3{font-family:"Archivo",system-ui,sans-serif;color:var(--ink);margin:0;line-height:1.15;}
+      p{margin:0;}
+      button{font-family:inherit;cursor:pointer;}
+      a{color:var(--blue);}
+      :focus-visible{outline:3px solid rgba(50,51,239,.45);outline-offset:2px;border-radius:6px;}
+
+      .wrap{max-width:780px;margin:0 auto;padding:28px 18px 56px;}
+
+      /* ---------- Hero ---------- */
+      .demo-tag{
+        display:inline-flex;align-items:center;gap:8px;
+        font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+        color:var(--blue);background:var(--blue-tint);
+        border:1px solid var(--line);border-radius:999px;padding:6px 14px;
+      }
+      .demo-tag .dot{width:8px;height:8px;border-radius:50%;background:var(--blue-hi);flex:none;}
+      h1{font-size:clamp(32px,6vw,46px);font-weight:800;letter-spacing:-.015em;margin:18px 0 12px;}
+      .lede{font-size:clamp(16px,2.6vw,18.5px);max-width:620px;}
+      .lede strong{color:var(--ink);}
+      .sim-note{
+        display:flex;gap:10px;align-items:flex-start;
+        margin-top:18px;padding:12px 16px;
+        background:var(--orange-tint);border:1px solid #ffd8bf;border-radius:var(--radius);
+        font-size:14px;color:#7a3410;
+      }
+      .sim-note svg{flex:none;margin-top:2px;}
+      .sim-note strong{color:#5c2708;}
+
+      /* ---------- Scenario bar ---------- */
+      .scenario{
+        margin-top:24px;background:var(--surface);border:1px solid var(--line);
+        border-radius:var(--radius);box-shadow:var(--shadow);
+        padding:18px 20px;
+        display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;
+      }
+      .scenario .who{display:flex;gap:14px;align-items:center;min-width:0;}
+      .avatar-badge{
+        width:48px;height:48px;flex:none;border-radius:12px;
+        background:var(--panel);border:1px solid var(--line);
+        display:flex;align-items:center;justify-content:center;
+        font-family:"Archivo",sans-serif;font-weight:800;color:var(--blue);font-size:17px;
+      }
+      .scenario .biz{font-family:"Archivo",sans-serif;font-weight:700;color:var(--ink);font-size:16.5px;}
+      .scenario .role{font-size:13.5px;color:var(--muted);}
+      .clockbox{text-align:right;}
+      .clockbox .time{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--ink);font-size:17px;}
+      .clockbox .label{font-size:12.5px;color:var(--muted);}
+
+      /* ---------- Timer ---------- */
+      .timerbar{
+        margin-top:16px;display:none;align-items:center;gap:12px;
+        background:var(--ink);color:#fff;border-radius:var(--radius);padding:12px 18px;
+      }
+      .timerbar.on{display:flex;}
+      .timerbar .pulse{width:9px;height:9px;border-radius:50%;background:var(--orange);flex:none;animation:pulse 1.2s ease-in-out infinite;}
+      @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.45;transform:scale(.8);}}
+      .timerbar .tlabel{font-size:13.5px;color:#c9c9e4;letter-spacing:.02em;}
+      .timerbar .tval{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:20px;margin-left:auto;}
+      .timerbar .tval small{font-size:12px;color:#c9c9e4;font-weight:500;}
+
+      /* ---------- Steps ---------- */
+      .steps{display:flex;gap:8px;margin:26px 0 6px;flex-wrap:wrap;}
+      .step-pill{
+        display:inline-flex;align-items:center;gap:8px;
+        font-size:13px;font-weight:600;color:var(--muted);
+        background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 14px 7px 8px;
+      }
+      .step-pill .n{
+        width:22px;height:22px;border-radius:50%;flex:none;
+        background:var(--panel);color:var(--muted);
+        display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+      }
+      .step-pill.active{color:var(--blue);border-color:var(--blue);}
+      .step-pill.active .n{background:var(--blue);color:#fff;}
+      .step-pill.done{color:var(--ink);}
+      .step-pill.done .n{background:var(--blue);color:#fff;}
+
+      /* ---------- Cards & sections ---------- */
+      .stage{margin-top:18px;}
+      .card{
+        background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow);padding:22px;
+      }
+      .card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+      .card-head h2{font-size:19px;font-weight:700;}
+      .card-head .tag{
+        font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+        color:var(--blue);background:var(--blue-tint);border-radius:999px;padding:4px 10px;
+      }
+      .hidden{display:none !important;}
+      .reveal{animation:rise .45s ease both;}
+      @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+      @media (prefers-reduced-motion:reduce){
+        .reveal{animation:none;}
+        .timerbar .pulse{animation:none;}
+        html{scroll-behavior:auto;}
+      }
+
+      /* ---------- Inbox teaser ---------- */
+      .inbox-row{
+        display:flex;gap:14px;align-items:flex-start;
+        border:1px solid var(--line);border-radius:12px;padding:16px;
+        background:var(--panel-soft);
+      }
+      .inbox-row .unread{width:10px;height:10px;border-radius:50%;background:var(--orange);flex:none;margin-top:7px;}
+      .inbox-row .from{font-weight:700;color:var(--ink);font-size:15px;}
+      .inbox-row .subj{color:var(--ink);font-size:14.5px;}
+      .inbox-row .snip{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+      .inbox-row .when{margin-left:auto;font-size:12.5px;color:var(--muted);flex:none;font-family:"IBM Plex Mono",monospace;}
+
+      /* ---------- Email card ---------- */
+      .email-meta{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:14px;}
+      .email-meta .row{display:flex;gap:10px;font-size:14px;padding:2px 0;flex-wrap:wrap;}
+      .email-meta .k{color:var(--muted);width:58px;flex:none;font-weight:600;}
+      .email-meta .v{color:var(--ink);}
+      .email-meta .v.addr{color:var(--body);font-size:13.5px;}
+      .email-subject{font-family:"Archivo",sans-serif;font-weight:700;color:var(--ink);font-size:18px;margin-bottom:10px;}
+      .email-body p{margin-bottom:12px;font-size:15.5px;}
+      .email-body p:last-child{margin-bottom:0;}
+      .sig{color:var(--muted);}
+
+      /* ---------- Buttons ---------- */
+      .btn{
+        display:inline-flex;align-items:center;justify-content:center;gap:9px;
+        border:none;border-radius:12px;font-weight:700;font-size:15.5px;
+        padding:14px 24px;min-height:52px;text-decoration:none;
+        transition:background .15s ease,transform .1s ease;
+      }
+      .btn:active{transform:translateY(1px);}
+      .btn-primary{background:var(--blue);color:#fff;}
+      .btn-primary:hover{background:var(--blue-dark);}
+      .btn-cta{background:var(--orange);color:#fff;font-size:16.5px;padding:16px 30px;}
+      .btn-cta:hover{background:var(--orange-dark);}
+      .btn-ghost{background:var(--surface);color:var(--blue);border:1.5px solid var(--blue);}
+      .btn-ghost:hover{background:var(--blue-tint);}
+      .btn[disabled]{opacity:.65;cursor:wait;}
+      .btn-row{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+      .btn-row .hint{font-size:13px;color:var(--muted);}
+
+      /* ---------- Drafting animation ---------- */
+      .drafting{display:flex;align-items:center;gap:14px;padding:8px 0 4px;}
+      .typing{display:inline-flex;gap:5px;}
+      .typing span{width:9px;height:9px;border-radius:50%;background:var(--blue);animation:bounce 1.1s infinite;}
+      .typing span:nth-child(2){animation-delay:.15s;}
+      .typing span:nth-child(3){animation-delay:.3s;}
+      @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5;}30%{transform:translateY(-6px);opacity:1;}}
+      @media (prefers-reduced-motion:reduce){.typing span{animation:none;}}
+      .drafting .dtext{font-weight:600;color:var(--ink);font-size:15px;}
+      .drafting .dsub{font-size:13px;color:var(--muted);}
+      .skeleton{margin-top:16px;display:grid;gap:10px;}
+      .skeleton div{height:13px;border-radius:6px;background:linear-gradient(90deg,var(--panel) 25%,#e2e4fb 50%,var(--panel) 75%);background-size:200% 100%;animation:shimmer 1.3s infinite;}
+      .skeleton div:nth-child(2){width:92%;}
+      .skeleton div:nth-child(3){width:78%;}
+      .skeleton div:nth-child(4){width:55%;}
+      @keyframes shimmer{from{background-position:200% 0;}to{background-position:-200% 0;}}
+      @media (prefers-reduced-motion:reduce){.skeleton div{animation:none;}}
+
+      /* ---------- Intent chips ---------- */
+      .chips-label{font-size:12.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;}
+      .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+      .chip{
+        display:inline-flex;align-items:center;gap:7px;
+        background:var(--panel);border:1px solid var(--line);border-radius:999px;
+        padding:7px 13px;font-size:13.5px;color:var(--body);
+      }
+      .chip strong{color:var(--ink);font-weight:700;}
+      .chip svg{flex:none;}
+
+      /* ---------- Tone switcher ---------- */
+      .tone-label{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:9px;}
+      .tones{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+      .tone-btn{
+        border:1.5px solid var(--line);background:var(--surface);color:var(--body);
+        border-radius:999px;padding:10px 18px;min-height:44px;
+        font-size:14px;font-weight:600;transition:all .15s ease;
+      }
+      .tone-btn:hover{border-color:var(--blue);color:var(--blue);}
+      .tone-btn.selected{background:var(--blue);border-color:var(--blue);color:#fff;}
+      textarea{
+        width:100%;min-height:250px;resize:vertical;
+        border:1.5px solid var(--line);border-radius:12px;padding:16px;
+        font-family:inherit;font-size:15px;line-height:1.6;color:var(--ink);background:var(--surface);
+      }
+      textarea:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(50,51,239,.18);}
+      .edit-note{font-size:13px;color:var(--muted);margin-top:8px;}
+
+      /* ---------- Sending ---------- */
+      .sending{display:flex;align-items:center;gap:14px;}
+      .spinner{
+        width:26px;height:26px;flex:none;border-radius:50%;
+        border:3px solid var(--blue-tint);border-top-color:var(--blue);
+        animation:spin .8s linear infinite;
+      }
+      @keyframes spin{to{transform:rotate(360deg);}}
+      @media (prefers-reduced-motion:reduce){.spinner{animation-duration:2.4s;}}
+
+      /* ---------- Sarah reply ---------- */
+      .reply-card{border-left:4px solid var(--blue);}
+      .reply-card .email-body p{font-size:15.5px;}
+
+      /* ---------- Outcome ---------- */
+      .outcome{
+        background:var(--ink);color:#e8e8f5;border-radius:var(--radius);
+        padding:24px;box-shadow:var(--shadow);
+      }
+      .outcome .ok-row{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+      .ok-badge{
+        width:40px;height:40px;border-radius:50%;flex:none;
+        background:var(--blue-hi);display:flex;align-items:center;justify-content:center;
+      }
+      .outcome h2{color:#fff;font-size:22px;}
+      .outcome .sim-tag{
+        font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+        background:rgba(255,255,255,.12);color:#c9c9e4;border-radius:999px;padding:4px 10px;
+      }
+      .appt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0;}
+      .appt-cell{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:13px 14px;}
+      .appt-cell .k{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#a9a9cc;margin-bottom:4px;}
+      .appt-cell .v{color:#fff;font-weight:600;font-size:15px;line-height:1.35;}
+      .elapsed-line{font-size:14.5px;color:#c9c9e4;}
+      .elapsed-line strong{color:#fff;font-family:"IBM Plex Mono",monospace;font-size:16px;}
+      .did{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);}
+      .did h3{font-size:17px;margin-bottom:14px;}
+      .did ul{list-style:none;margin:0;padding:0;display:grid;gap:11px;}
+      .did li{display:flex;gap:11px;align-items:flex-start;font-size:15px;}
+      .did li svg{flex:none;margin-top:3px;}
+      .did li strong{color:var(--ink);}
+
+      /* ---------- Final CTA ---------- */
+      .final{
+        margin-top:26px;background:var(--panel);border:1px solid var(--line);
+        border-radius:var(--radius);padding:28px 24px;text-align:center;
+      }
+      .final h2{font-size:clamp(21px,4vw,26px);margin-bottom:10px;}
+      .final p{max-width:520px;margin:0 auto 20px;font-size:15.5px;}
+      .final .btn-row{justify-content:center;margin-top:0;}
+
+      footer{
+        margin-top:40px;padding-top:20px;border-top:1px solid var(--line);
+        font-size:13.5px;color:var(--muted);text-align:center;line-height:1.7;
+      }
+      footer strong{color:var(--ink);}
+      footer a{font-weight:600;text-decoration:none;}
+      footer a:hover{text-decoration:underline;}
+
+      @media (max-width:560px){
+        .wrap{padding:22px 14px 44px;}
+        .card{padding:18px 16px;}
+        .outcome{padding:20px 16px;}
+        .appt-grid{grid-template-columns:1fr;}
+        .clockbox{text-align:left;}
+        .scenario{padding:16px;}
+        .btn{width:100%;}
+        .btn-row .hint{width:100%;text-align:center;}
+        .final .btn{width:auto;}
+        .final .btn-row{flex-direction:column;}
+        .final .btn-row .btn{width:100%;}
+        textarea{min-height:300px;}
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+
+      <!-- ================= HERO ================= -->
+      <span class="demo-tag"><span class="dot"></span>Interactive demo · No. 14</span>
+      <h1>AI Email Reply Assistant</h1>
+      <p class="lede">
+        Watch an AI assistant read a customer email, draft the right reply in seconds, and turn it
+        into a <strong>booked appointment</strong> — the same workflow that stops small businesses
+        from losing jobs while the inbox sits unread.
+      </p>
+      <div class="sim-note" role="note">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="#d9480f" stroke-width="2"/><path d="M12 8v5" stroke="#d9480f" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1.3" fill="#d9480f"/></svg>
+        <p><strong>Scripted simulation.</strong> No real emails are sent and no real bookings are made. Every name, address, and message on this page is fictional and runs entirely in your browser.</p>
+      </div>
+
+      <div class="scenario">
+        <div class="who">
+          <div class="avatar-badge" aria-hidden="true">CF</div>
+          <div>
+            <div class="biz">ClearFlow Plumbing Co.</div>
+            <div class="role">You are the owner. This is your inbox.</div>
+          </div>
+        </div>
+        <div class="clockbox">
+          <div class="time">7:42 AM</div>
+          <div class="label">Tuesday morning — a new email just landed</div>
+        </div>
+      </div>
+
+      <div class="timerbar" id="timerbar" aria-live="off">
+        <span class="pulse" aria-hidden="true"></span>
+        <span class="tlabel">Time since the email was opened</span>
+        <span class="tval"><span id="timerVal">0</span> <small>sec</small></span>
+      </div>
+
+      <!-- Steps indicator -->
+      <div class="steps" aria-hidden="true">
+        <span class="step-pill" id="pill1"><span class="n">1</span>The email</span>
+        <span class="step-pill" id="pill2"><span class="n">2</span>AI draft</span>
+        <span class="step-pill" id="pill3"><span class="n">3</span>Booked</span>
+      </div>
+
+      <!-- ================= STAGE 0: INBOX TEASER ================= -->
+      <section class="stage" id="stageInbox">
+        <div class="card">
+          <div class="card-head">
+            <h2>Inbox</h2>
+            <span class="tag">1 unread</span>
+          </div>
+          <div class="inbox-row">
+            <span class="unread" aria-hidden="true"></span>
+            <div style="min-width:0;">
+              <div class="from">Sarah Mitchell</div>
+              <div class="subj">Leaking water heater — need someone today?</div>
+              <div class="snip">Hi, I woke up this morning to find water pooling around the water heater in my basement…</div>
+            </div>
+            <span class="when">7:42 AM</span>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnOpen" type="button">
+              Open the email
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <span class="hint">The response timer starts the moment you open it.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= STAGE 1: THE EMAIL ================= -->
+      <section class="stage hidden" id="stageEmail">
+        <div class="card reveal">
+          <div class="card-head">
+            <h2>The customer email</h2>
+            <span class="tag">Simulated message</span>
+          </div>
+          <div class="email-meta">
+            <div class="row"><span class="k">From</span><span class="v">Sarah Mitchell <span class="addr">&lt;sarah.mitchell@example.com&gt;</span></span></div>
+            <div class="row"><span class="k">To</span><span class="v">ClearFlow Plumbing Co.</span></div>
+            <div class="row"><span class="k">Time</span><span class="v">Today, 7:42 AM</span></div>
+          </div>
+          <div class="email-subject">Leaking water heater — need someone today?</div>
+          <div class="email-body">
+            <p>Hi,</p>
+            <p>I woke up this morning to find water pooling around the water heater in my basement. It looks like it is leaking from the bottom, and the puddle is slowly getting bigger. I have put towels down, but I am worried it will get worse.</p>
+            <p>Is there any chance someone could come out today? And could you give me a rough idea of what it might cost before I book anything?</p>
+            <p class="sig">Thank you,<br />Sarah Mitchell</p>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnDraft" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4L12 3Z" fill="currentColor"/><path d="M19 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2Z" fill="currentColor"/></svg>
+              Let the AI draft a reply
+            </button>
+            <span class="hint">Watch what it picks up from her message.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= STAGE 2: DRAFTING ================= -->
+      <section class="stage hidden" id="stageDrafting">
+        <div class="card reveal">
+          <div class="card-head">
+            <h2>AI is working on it</h2>
+          </div>
+          <div class="drafting">
+            <span class="typing" aria-hidden="true"><span></span><span></span><span></span></span>
+            <div>
+              <div class="dtext">AI is drafting…</div>
+              <div class="dsub">Reading the email, checking urgency, and writing a reply in your voice.</div>
+            </div>
+          </div>
+          <div class="skeleton" aria-hidden="true"><div></div><div></div><div></div><div></div></div>
+        </div>
+      </section>
+
+      <!-- ================= STAGE 2b: THE DRAFT ================= -->
+      <section class="stage hidden" id="stageDraft">
+        <div class="card reveal">
+          <div class="card-head">
+            <h2>The AI draft</h2>
+            <span class="tag">Ready to review</span>
+          </div>
+
+          <div class="chips-label">What the AI detected in her email</div>
+          <div class="chips">
+            <span class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Z" stroke="#f76707" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="#f76707" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.1" fill="#f76707"/></svg><span><strong>Urgent:</strong> active leak</span></span>
+            <span class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 1 5.6-3.6l-3 3 1 2.4 2.4 1a4 4 0 0 1-5.5 4.6L8 20.5a2 2 0 0 1-2.8-2.8l6.6-6.7a4 4 0 0 1 2.7-4.5Z" fill="#2b2bd0"/></svg><span><strong>Service:</strong> water heater</span></span>
+            <span class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#2b2bd0" stroke-width="2"/><path d="M12 7v5l3.5 2" stroke="#2b2bd0" stroke-width="2" stroke-linecap="round"/></svg><span><strong>Wants:</strong> same-day visit</span></span>
+            <span class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#2b2bd0" stroke-width="2"/><path d="M12 7v10M15 9.2c-.6-.9-1.7-1.3-3-1.3-1.9 0-3.1 1-3.1 2.3 0 3.2 6.4 1.7 6.4 4.5 0 1.3-1.4 2.3-3.3 2.3-1.4 0-2.6-.6-3.2-1.5" stroke="#2b2bd0" stroke-width="1.8" stroke-linecap="round"/></svg><span><strong>Asked:</strong> rough price</span></span>
+          </div>
+
+          <div class="tone-label" id="toneLabel">Reply tone — tap to rewrite the draft</div>
+          <div class="tones" role="group" aria-labelledby="toneLabel">
+            <button class="tone-btn selected" type="button" data-tone="friendly" aria-pressed="true">Friendly &amp; reassuring</button>
+            <button class="tone-btn" type="button" data-tone="professional" aria-pressed="false">Professional</button>
+            <button class="tone-btn" type="button" data-tone="concise" aria-pressed="false">Concise</button>
+          </div>
+
+          <label for="draftText" class="tone-label">Draft reply — yours to edit before sending</label>
+          <textarea id="draftText" rows="11" aria-describedby="editNote"></textarea>
+          <p class="edit-note" id="editNote">This is a starting point, not a final answer. Edit anything — the AI works for you, not the other way round.</p>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnSend" type="button">
+              Send reply (simulated)
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 3 10.5 13.5M21 3l-6.8 18-3.7-7.5L3 9.8 21 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </button>
+            <span class="hint">Simulated send — nothing leaves this page.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= STAGE 3: SENDING ================= -->
+      <section class="stage hidden" id="stageSending">
+        <div class="card reveal">
+          <div class="sending">
+            <span class="spinner" aria-hidden="true"></span>
+            <div>
+              <div class="dtext" style="font-weight:600;color:var(--ink);font-size:15px;">Sending your reply…</div>
+              <div style="font-size:13px;color:var(--muted);">On its way to Sarah (in this simulation).</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= STAGE 3b: OUTCOME ================= -->
+      <section class="stage hidden" id="stageOutcome">
+        <div class="card reply-card reveal" style="margin-bottom:18px;">
+          <div class="card-head">
+            <h2>Sarah replied</h2>
+            <span class="tag">Simulated reply</span>
+          </div>
+          <div class="email-meta">
+            <div class="row"><span class="k">From</span><span class="v">Sarah Mitchell <span class="addr">&lt;sarah.mitchell@example.com&gt;</span></span></div>
+            <div class="row"><span class="k">Re</span><span class="v">Leaking water heater — need someone today?</span></div>
+          </div>
+          <div class="email-body">
+            <p>Yes, 2:00 PM works — please book it. Thank you!</p>
+            <p class="sig">— Sarah</p>
+          </div>
+        </div>
+
+        <div class="outcome reveal">
+          <div class="ok-row">
+            <span class="ok-badge" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5 10 18 19.5 6.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <h2>Appointment booked</h2>
+            <span class="sim-tag">Simulated</span>
+          </div>
+          <div class="appt-grid">
+            <div class="appt-cell"><div class="k">When</div><div class="v">Today, 2:00 PM</div></div>
+            <div class="appt-cell"><div class="k">Service</div><div class="v">Water heater inspection</div></div>
+            <div class="appt-cell"><div class="k">Customer</div><div class="v">Sarah Mitchell</div></div>
+          </div>
+          <p class="elapsed-line">From opening her email to a confirmed booking: <strong><span id="elapsedVal">0</span> seconds</strong>. No phone tag, no missed lead, no evening spent catching up on the inbox.</p>
+        </div>
+
+        <div class="did reveal">
+          <h3>What the AI did</h3>
+          <ul>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#2b2bd0"/><path d="M8 12.5 11 15.5 16.5 9" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Read the email</strong> the moment it arrived at 7:42 AM.</span></li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#2b2bd0"/><path d="M8 12.5 11 15.5 16.5 9" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Spotted the urgency</strong> — an active leak that could not wait until tomorrow.</span></li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#2b2bd0"/><path d="M8 12.5 11 15.5 16.5 9" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Drafted a reply</strong> in the <span id="toneUsed">Friendly &amp; reassuring</span> tone, with a same-day slot and an honest price estimate.</span></li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#2b2bd0"/><path d="M8 12.5 11 15.5 16.5 9" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Sent it</strong> as soon as you approved the draft.</span></li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#2b2bd0"/><path d="M8 12.5 11 15.5 16.5 9" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>Booked the visit</strong> for today at 2:00 PM the moment Sarah confirmed.</span></li>
+          </ul>
+        </div>
+
+        <div class="final reveal">
+          <h2>Want this answering your inbox?</h2>
+          <p>An AI reply assistant can watch your email around the clock, draft in your tone, and book the job while you are on the tools. Book a short discovery call and we will map it to your business.</p>
+          <div class="btn-row">
+            <a class="btn btn-cta" href="https://cal.com/mrbilalali/discovery-call" target="_blank" rel="noopener">
+              Book a discovery call
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <button class="btn btn-ghost" id="btnRestart" type="button">Start over</button>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <strong>Demo by Bilal Ali — AI Automation Expert</strong><br />
+        AI voice agents that answer every lead in 60 seconds.<br />
+        <a href="https://cal.com/mrbilalali/discovery-call" target="_blank" rel="noopener">Book a discovery call</a> · Scripted simulation — fictional business, names, and messages throughout.
+      </footer>
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var drafts = {
+          friendly:
+            "Hi Sarah,\n\n" +
+            "Thanks for getting in touch — I'm really sorry you're dealing with this first thing in the morning. A leaking water heater is exactly the kind of thing that shouldn't wait, so let's get it sorted today.\n\n" +
+            "Good news: we can have a plumber with you today at 2:00 PM to inspect the heater and stop the leak.\n\n" +
+            "On cost, I want to be upfront: this is a rough estimate only, not a fixed quote. An inspection visit like this usually runs $90–$150, and if the heater needs a repair rather than a replacement, most jobs land somewhere in the $250–$600 range depending on the part. Your plumber will confirm the exact price before any work begins — no surprises.\n\n" +
+            "One quick tip while you wait: if the puddle keeps growing, you can turn off the water supply valve on top of the heater.\n\n" +
+            "Shall I book you in for today at 2:00 PM? Just reply to confirm and we'll take it from there.\n\n" +
+            "Warm regards,\nClearFlow Plumbing Co.",
+          professional:
+            "Dear Sarah,\n\n" +
+            "Thank you for contacting ClearFlow Plumbing Co. regarding the leak from your water heater.\n\n" +
+            "We can attend today at 2:00 PM to inspect the unit, identify the source of the leak, and advise on the appropriate repair.\n\n" +
+            "For transparency, please treat the following as an estimate only, not a quotation: an inspection visit is typically $90–$150, and most water heater repairs fall within $250–$600 depending on the parts required. A confirmed price will be provided before any work proceeds.\n\n" +
+            "Please reply to confirm the 2:00 PM appointment, and we will reserve the slot for you.\n\n" +
+            "Kind regards,\nClearFlow Plumbing Co.",
+          concise:
+            "Hi Sarah,\n\n" +
+            "Sorry to hear about the leak — we can help today.\n\n" +
+            "We have a slot today at 2:00 PM for a water heater inspection.\n\n" +
+            "Rough estimate only (not a quote): inspection visits run $90–$150, and most repairs land between $250–$600 depending on the part. You'll get an exact price before any work starts.\n\n" +
+            "Reply to confirm 2:00 PM and we'll book you in.\n\n" +
+            "Thanks,\nClearFlow Plumbing Co."
+        };
+        var toneNames = {
+          friendly: "Friendly & reassuring",
+          professional: "Professional",
+          concise: "Concise"
+        };
+
+        var els = {
+          timerbar: document.getElementById("timerbar"),
+          timerVal: document.getElementById("timerVal"),
+          elapsedVal: document.getElementById("elapsedVal"),
+          toneUsed: document.getElementById("toneUsed"),
+          draftText: document.getElementById("draftText"),
+          stageInbox: document.getElementById("stageInbox"),
+          stageEmail: document.getElementById("stageEmail"),
+          stageDrafting: document.getElementById("stageDrafting"),
+          stageDraft: document.getElementById("stageDraft"),
+          stageSending: document.getElementById("stageSending"),
+          stageOutcome: document.getElementById("stageOutcome"),
+          pill1: document.getElementById("pill1"),
+          pill2: document.getElementById("pill2"),
+          pill3: document.getElementById("pill3"),
+          btnOpen: document.getElementById("btnOpen"),
+          btnDraft: document.getElementById("btnDraft"),
+          btnSend: document.getElementById("btnSend"),
+          btnRestart: document.getElementById("btnRestart")
+        };
+
+        var startTime = null;
+        var tickCount = 0;
+        var timerId = null;
+        var timeouts = [];
+        var currentTone = "friendly";
+
+        function elapsedSeconds() {
+          if (startTime === null) return 0;
+          var byClock = Math.floor((Date.now() - startTime) / 1000);
+          var byTicks = Math.floor(tickCount / 4);
+          return Math.max(byClock, byTicks);
+        }
+        function startTimer() {
+          startTime = Date.now();
+          tickCount = 0;
+          els.timerbar.classList.add("on");
+          els.timerVal.textContent = "0";
+          timerId = setInterval(function () {
+            tickCount++;
+            els.timerVal.textContent = String(elapsedSeconds());
+          }, 250);
+        }
+        function stopTimer() {
+          if (timerId !== null) { clearInterval(timerId); timerId = null; }
+        }
+        function later(fn, ms) {
+          var id = setTimeout(fn, ms);
+          timeouts.push(id);
+          return id;
+        }
+        function clearTimers() {
+          timeouts.forEach(function (id) { clearTimeout(id); });
+          timeouts = [];
+        }
+        function show(el) { el.classList.remove("hidden"); }
+        function hide(el) { el.classList.add("hidden"); }
+        function scrollToEl(el) {
+          later(function () {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 60);
+        }
+        function setPill(el, state) {
+          el.classList.remove("active", "done");
+          if (state) el.classList.add(state);
+        }
+
+        function selectTone(tone, focusDraft) {
+          currentTone = tone;
+          var btns = document.querySelectorAll(".tone-btn");
+          btns.forEach(function (b) {
+            var on = b.getAttribute("data-tone") === tone;
+            b.classList.toggle("selected", on);
+            b.setAttribute("aria-pressed", on ? "true" : "false");
+          });
+          els.draftText.value = drafts[tone];
+          if (focusDraft) els.draftText.focus();
+        }
+
+        /* Step 0 -> 1: open the email, start the live timer */
+        els.btnOpen.addEventListener("click", function () {
+          hide(els.stageInbox);
+          show(els.stageEmail);
+          setPill(els.pill1, "active");
+          startTimer();
+          scrollToEl(els.stageEmail);
+        });
+
+        /* Step 1 -> 2: drafting animation, then the draft */
+        els.btnDraft.addEventListener("click", function () {
+          els.btnDraft.disabled = true;
+          hide(els.stageEmail);
+          setPill(els.pill1, "done");
+          setPill(els.pill2, "active");
+          show(els.stageDrafting);
+          scrollToEl(els.stageDrafting);
+          later(function () {
+            hide(els.stageDrafting);
+            selectTone("friendly", false);
+            show(els.stageDraft);
+            scrollToEl(els.stageDraft);
+          }, 2000);
+        });
+
+        /* Tone buttons rewrite the draft */
+        document.querySelectorAll(".tone-btn").forEach(function (b) {
+          b.addEventListener("click", function () {
+            selectTone(b.getAttribute("data-tone"), false);
+          });
+        });
+
+        /* Step 2 -> 3: simulated send, then the outcome */
+        els.btnSend.addEventListener("click", function () {
+          els.btnSend.disabled = true;
+          document.querySelectorAll(".tone-btn").forEach(function (b) { b.disabled = true; });
+          els.draftText.disabled = true;
+          hide(els.stageDraft);
+          setPill(els.pill2, "done");
+          setPill(els.pill3, "active");
+          show(els.stageSending);
+          scrollToEl(els.stageSending);
+          later(function () {
+            hide(els.stageSending);
+            els.elapsedVal.textContent = String(elapsedSeconds());
+            els.toneUsed.textContent = toneNames[currentTone];
+            setPill(els.pill3, "done");
+            show(els.stageOutcome);
+            scrollToEl(els.stageOutcome);
+          }, 1600);
+        });
+
+        /* Start over: full reset */
+        els.btnRestart.addEventListener("click", function () {
+          clearTimers();
+          stopTimer();
+          startTime = null;
+          els.timerVal.textContent = "0";
+          els.timerbar.classList.remove("on");
+          hide(els.stageEmail);
+          hide(els.stageDrafting);
+          hide(els.stageDraft);
+          hide(els.stageSending);
+          hide(els.stageOutcome);
+          show(els.stageInbox);
+          setPill(els.pill1, "");
+          setPill(els.pill2, "");
+          setPill(els.pill3, "");
+          els.btnDraft.disabled = false;
+          els.btnSend.disabled = false;
+          els.draftText.disabled = false;
+          document.querySelectorAll(".tone-btn").forEach(function (b) { b.disabled = false; });
+          selectTone("friendly", false);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          els.btnOpen.focus();
+        });
+      })();
+    </script>
+  </body>
+</html>
